@@ -86,14 +86,21 @@
                 
 
 (define node
-  (lambda (nd_arg)
-    (lambda () nd_arg)))
+  (lambda (store)
+    (lambda nd_arg
+      (cond ((null? nd_arg) store)                               ; we want the store value
+            ((pair? (car nd_arg)) (replace store (car nd_arg)))  ; we want to replace variables by their values
+            (else ((car nd_arg) store))))))                      ; we want to apply a function to the node
 
 (define recover
   (lambda (nd)
-    (let ((val (nd)))
+    (let ((val nd))
       (val))))
 
-(cadr '(+ ((1 2) (3 4) (5 6)) 'x))
-(list 'a 'b)
-(recover (node 'x))
+(define inc
+   (lambda (a)
+     (+ a 1)))
+
+((node 2) inc)     ;[[(node f)]]
+(inc ((node 2)))   ;[[(f store)]]
+((node 'x) '((y . 1) (x . 4)))
