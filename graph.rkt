@@ -1,12 +1,5 @@
 #lang racket
 ;-----------------------------------------------------------;
-;                         CONSTANT                          ;
-;-----------------------------------------------------------;
-
-(define pi (* 4 (atan 1 1)))
-(define ns (make-base-namespace))
-
-;-----------------------------------------------------------;
 ;                      BASIC FUNCTIONS                      ;
 ;-----------------------------------------------------------;
 
@@ -63,14 +56,18 @@
               ((symbol? store) (node (replace-var store t))) ; val est un symbole (VAR_STORE)
               (else (node (replace-fn store t))))))))        ; val est un triplet (FN_STORE)    
                 
-
 (define node
   (lambda (store)
     (if (procedure? store) store ; if store is already a node
         (lambda nd_arg
           (cond ((null? nd_arg) store)                                        ; we want the store value
                 ((list? (car nd_arg)) ((replace (car nd_arg)) (node store)))  ; we want to replace variables by their valuesµ
-                (else ((car nd_arg) store)))))))                              ; we want to apply a function to the node
+                (else ((car nd_arg) store)))))))                              ; we want to apply a function to the node's store
+
+(define nd (node 4))
+(nd)
+(add1 (nd))
+
 
 
 
@@ -163,6 +160,18 @@
 ;-----------------------------------------------------------;
 ;                         AFFICHAGE                         ;
 ;-----------------------------------------------------------;
+
+(define get-stores
+  (lambda (nodes)
+    (if (null? nodes) '()
+        (cons ((car nodes)) (get-stores (cdr nodes))))))
+
+(define repr
+  (lambda (store)
+    (if (list? store)
+        (append (list (car store)) (map repr (get-stores (cadr store))))
+        store)))
+    
 ;-----------------------------------------------------------;
 ;                           TESTS                           ;
 ;-----------------------------------------------------------;
@@ -176,6 +185,5 @@
 
 (define ls (list '+ (list (node (list '+ (list (node 'x) (node 'y)) sf-add)) (node 'z)) sf-add))
 (define nodes (node ls))
-(disp nodes '())
-(nodes)
+(nodes repr)
 
